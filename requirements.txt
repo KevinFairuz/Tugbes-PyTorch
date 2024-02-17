@@ -1,7 +1,0 @@
-pandas
-numpy
-seaborn
-streamlit
-plotly     
-streamlit_option_menu
-folium
