@@ -4,7 +4,6 @@ import folium
 import datetime
 from PIL import Image
 import numpy as np
-import matplotlib.pyplot as plt
 import seaborn as sns
 from streamlit_option_menu import option_menu
 # Loading the CSV file into a DataFrame
