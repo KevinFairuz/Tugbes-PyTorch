@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import folium
 import datetime
+import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
 import seaborn as sns
@@ -16,14 +17,15 @@ df_sellers = pd.read_csv('sellers_dataset.csv')
 df_data_review = pd.read_csv('order_reviews_dataset.csv')
 st.set_page_config(layout="wide")
 st.markdown('<style>div.block-container{padding-top:')
-st.markdown('<style>div.block-container{padding-top:1rem;}</style>', unsafe_allow_html=True)
+st.markdown(
+    '<style>div.block-container{padding-top:1rem;}</style>', unsafe_allow_html=True)
 image = Image.open('shopee-logo-1.jpg')
 
 seller = list(df_sellers['seller_state'])
 
-col1, col2 = st.columns([0.1,0.9])
+col1, col2 = st.columns([0.1, 0.9])
 with col1:
-    st.image(image,width=100)
+    st.image(image, width=100)
 
 html_title = """
     <style>
@@ -38,7 +40,7 @@ html_title = """
 with col2:
     st.markdown(html_title, unsafe_allow_html=True)
 
-col3, col4, col5 = st.columns([0.5,0.45,0.45])
+col3, col4, col5 = st.columns([0.5, 0.45, 0.45])
 with col3:
     box_date = str(datetime.datetime.now().strftime("%d %B %Y"))
     st.write(f"Last updated by:  \n {box_date}")
@@ -50,13 +52,16 @@ def load_data(url):
     df = pd.read_csv(url)
     return df
 
+
 with col4:
     def Analisis_Pengiriman(df_orders):
-    # Mengabil data order dengan status 'delivered'
-        df_orders_delivered = df_orders[df_orders['order_status'] == 'delivered']
+        # Mengabil data order dengan status 'delivered'
+        df_orders_delivered = df_orders[df_orders['order_status']
+                                        == 'delivered']
 
     # Menghapus nilai null pada atribut 'order_delivered_customer_date' pada dataframe
-        df_orders_delivered = df_orders_delivered.dropna(subset=['order_delivered_customer_date'])
+        df_orders_delivered = df_orders_delivered.dropna(
+            subset=['order_delivered_customer_date'])
 
     # Mengubah tipe data pada 'order_delivered_customer_date' dan 'order_estimated_delivery_date'
         df_orders_delivered['order_delivered_customer_date'] = pd.to_datetime(
@@ -71,32 +76,34 @@ with col4:
             df_orders_delivered['order_estimated_delivery_date'])
 
     # Perhitungan value_count() untuk status 'processing','shipped','delivered'
-        jumlah_processing = df_orders['order_status'].value_counts()['processing']
+        jumlah_processing = df_orders['order_status'].value_counts()[
+            'processing']
         jumlah_shipped = df_orders['order_status'].value_counts()['shipped']
-        jumlah_delivered = df_orders['order_status'].value_counts()['delivered']
+        jumlah_delivered = df_orders['order_status'].value_counts()[
+            'delivered']
 
     # Perhitungan pengiriman tepat waktu dan terlambat
         jml_order_terlambat = len(df_orders_delivered[(
-                df_orders_delivered["order_estimated_delivery_date"] < df_orders_delivered[
-            "order_delivered_customer_date"])])
+            df_orders_delivered["order_estimated_delivery_date"] < df_orders_delivered[
+                "order_delivered_customer_date"])])
         jml_order_tepat_waktu = len(df_orders_delivered[(
-                df_orders_delivered["order_estimated_delivery_date"] > df_orders_delivered[
-            "order_delivered_customer_date"])])
+            df_orders_delivered["order_estimated_delivery_date"] > df_orders_delivered[
+                "order_delivered_customer_date"])])
         jml_order_diterima = jml_order_tepat_waktu + jml_order_terlambat
 
     # Menghitung selisih hari
         df_orders_delivered["Selisih Hari"] = df_orders_delivered["order_delivered_customer_date"] - df_orders_delivered[
-        "order_estimated_delivery_date"]
+            "order_estimated_delivery_date"]
 
     # Mengganti nilai selisih hari negatif dengan 0
         df_orders_delivered["Selisih Hari"] = np.where(df_orders_delivered['Selisih Hari'].dt.days < 0, 0,
-                                                   df_orders_delivered['Selisih Hari'].dt.days)
+                                                       df_orders_delivered['Selisih Hari'].dt.days)
 
     # Grafik Status Pengiriman
         data_pengiriman = pd.DataFrame({
             'Kategori': ['Processing', 'Shipped', 'Delivered'],
             'Jumlah': [jumlah_processing, jumlah_shipped, jumlah_delivered]
-    })
+        })
 
     # Perkembangan Pengiriman
         st.header("Grafik Perkembangan Pengiriman")
@@ -107,7 +114,8 @@ with col4:
         data = data_pengiriman['Jumlah']
 
         fig, ax = plt.subplots()
-        ax.bar(label, data, color=['green' if kategori == 'Delivered' else 'red' for kategori in label])
+        ax.bar(label, data, color=['green' if kategori ==
+               'Delivered' else 'red' for kategori in label])
         ax.set_xlabel('Kategori')
         ax.set_ylabel('Jumlah')
 
@@ -122,7 +130,7 @@ with col4:
     # Expander Grafik
         with st.expander("Penjelasan Perkembangan Pengiriman"):
             st.write(
-            'Dilihat dari grafik diatas, terlihat dari proses pengiriman sudah sangat baik, terdapat 96.478 paket terkirim, dan perbandingannya sangat signifikan dibanding dengan proses yang lain. namun perlu dianalisa kembali untuk pengirimannya apakah sudah tepat waktu atau tidak')
+                'Dilihat dari grafik diatas, terlihat dari proses pengiriman sudah sangat baik, terdapat 96.478 paket terkirim, dan perbandingannya sangat signifikan dibanding dengan proses yang lain. namun perlu dianalisa kembali untuk pengirimannya apakah sudah tepat waktu atau tidak')
 
         st.write('<hr>', unsafe_allow_html=True)  # hr Garis Pemisah
 
@@ -148,7 +156,7 @@ with col4:
         # Expander Grafik
         with st.expander("Penjelasan Ketepatan Pengiriman"):
             st.write(
-            'Dilihat dari grafik pie tersebut, dapat dilihat bahwa dari total pengiriman, keterlambatan hanya berjumlah 6.534 pengiriman atau sejumlah 6.9% dari total pengiriman yang sudah dilakukan')
+                'Dilihat dari grafik pie tersebut, dapat dilihat bahwa dari total pengiriman, keterlambatan hanya berjumlah 6.534 pengiriman atau sejumlah 6.9% dari total pengiriman yang sudah dilakukan')
 
         st.write('<hr>', unsafe_allow_html=True)  # hr Garis Pemisah
 
@@ -159,16 +167,20 @@ with col4:
         nilai_max = df_orders_delivered['Selisih Hari'].max()
 
         fig, ax = plt.subplots()
-        hist, edges = np.histogram(df_orders_delivered['Selisih Hari'], bins=jumlah_bins, range=(nilai_min, nilai_max))
-        ax.hist(df_orders_delivered['Selisih Hari'], bins=edges, color='skyblue', edgecolor='k')
+        hist, edges = np.histogram(
+            df_orders_delivered['Selisih Hari'], bins=jumlah_bins, range=(nilai_min, nilai_max))
+        ax.hist(df_orders_delivered['Selisih Hari'],
+                bins=edges, color='skyblue', edgecolor='k')
 
         # Buat list rentang berdasarkan nilai bins (DataFrame)
-        rentang = [f'{int(edges[i])}-{int(edges[i + 1])}' for i in range(len(edges) - 1)]
+        rentang = [
+            f'{int(edges[i])}-{int(edges[i + 1])}' for i in range(len(edges) - 1)]
         jml_keterlambatan = []
 
         # Tambahkan jumlah frekuensi di atas setiap bin histogram
         for i in range(len(hist)):
-            ax.text((edges[i] + edges[i + 1]) / 2, hist[i], str(hist[i]), ha='center', va='bottom')
+            ax.text((edges[i] + edges[i + 1]) / 2, hist[i],
+                    str(hist[i]), ha='center', va='bottom')
             jml_keterlambatan.append(str(hist[i]))  # Untuk DataFrame
 
         waktu_keterlambatan = pd.DataFrame({
@@ -187,12 +199,13 @@ with col4:
      # Expander Grafik
         with st.expander("Penjelasan Waktu Keterlambatan"):
             st.write(
-            'Dilihat dari grafik tersebut, terlihat bahwa sebanyak 6.394 pengiriman terlambat dengan range waktu 1-47 hari, disini cukup lumayan banyak, namun untuk pengiriman ke luar negeri mungkin masih dapat di toleransi')
+                'Dilihat dari grafik tersebut, terlihat bahwa sebanyak 6.394 pengiriman terlambat dengan range waktu 1-47 hari, disini cukup lumayan banyak, namun untuk pengiriman ke luar negeri mungkin masih dapat di toleransi')
 
 
 def Analisis_Review(df_Order_Items, df_Order_Reviews, df_sellers):
     # Menghitung jumlah pesanan untuk masing-masing bintang 1-5
-    count_reviews = df_Order_Reviews['review_score'].value_counts().reset_index()
+    count_reviews = df_Order_Reviews['review_score'].value_counts(
+    ).reset_index()
     count_reviews.columns = ['Review_Score', 'Jumlah']
 
     # Join antara dataset Order_Reviews dengan Order_Items
@@ -222,7 +235,7 @@ def Analisis_Review(df_Order_Items, df_Order_Reviews, df_sellers):
 
     Lima_Terendah = count_review_city.head()
 
-    # Analisis Data Review Penilaian    
+    # Analisis Data Review Penilaian
     st.header("Grafik Review Terhadap Order Konsumen")
     count_reviews_sorted = count_reviews.sort_values(by='Review_Score')
 
@@ -233,7 +246,8 @@ def Analisis_Review(df_Order_Items, df_Order_Reviews, df_sellers):
     data = count_reviews['Jumlah']
 
     fig, ax = plt.subplots()
-    ax.bar(label, data, color=['skyblue' if kategori != 1 else 'red' for kategori in label])
+    ax.bar(label, data, color=['skyblue' if kategori !=
+           1 else 'red' for kategori in label])
     ax.set_xlabel('Review_Score')
     ax.set_ylabel('Jumlah')
 
@@ -257,7 +271,8 @@ def Analisis_Review(df_Order_Items, df_Order_Reviews, df_sellers):
     data = Lima_Terendah['Jumlah']
 
     fig, ax = plt.subplots()
-    ax.bar(label, data, color=['skyblue' if jumlah <= 999 else 'red' for jumlah in data])
+    ax.bar(label, data, color=['skyblue' if jumlah <=
+           999 else 'red' for jumlah in data])
     ax.set_xlabel('Seller_City')
     ax.set_ylabel('Jumlah')
 
@@ -274,6 +289,7 @@ def Analisis_Review(df_Order_Items, df_Order_Reviews, df_sellers):
         st.write(
             'Analisis selanjutnya untuk menambah wawasan pengguna, terlihat terdapat 2 cabang yang memiliki penilaian 1 terbanyak, diantaranya Sao Paulo sebanyak 3.571 dan ibitinga sebangayk 1.241. dari sini perusahaan dapat mengambil keputusan apakah barang dari cabang tersebut perlu di cek kembali kualitasnya atau menutup pengiriman dari cabang tersebut')
 
+
 def Analisis_Geoanalisis(df_geo_data):
     # Create a map
     m = folium.Map(location=[df_geo_data['geolocation_lat'].mean(), df_geo_data['geolocation_lng'].mean()],
@@ -281,14 +297,16 @@ def Analisis_Geoanalisis(df_geo_data):
 
     # Add points to the map
     for idx, row in df_geo_data.iterrows():
-        folium.CircleMarker([row['geolocation_lat'], row['geolocation_lng']], radius=3, fill=True).add_to(m)
+        folium.CircleMarker(
+            [row['geolocation_lat'], row['geolocation_lng']], radius=3, fill=True).add_to(m)
 
     # Display the map
     st.write(m._repr_html_(), unsafe_allow_html=True)
 
     # Using KMeans for clustering
     kmeans = KMeans(n_clusters=5)
-    df_geo_data['cluster'] = kmeans.fit_predict(df_geo_data[['geolocation_lat', 'geolocation_lng']])
+    df_geo_data['cluster'] = kmeans.fit_predict(
+        df_geo_data[['geolocation_lat', 'geolocation_lng']])
 
     # Plotting the clusters
     # Plotting the clusters
@@ -298,12 +316,15 @@ def Analisis_Geoanalisis(df_geo_data):
     plt.title('Cluster Analysis of Geolocations')
     st.pyplot(fig)
 
+
 df_Order_Items = load_data(
     "https://raw.githubusercontent.com/palafk/Tubes-PYTORCH/main/order_items_dataset.csv")
 df_Order_Reviews = load_data(
     "https://raw.githubusercontent.com/palafk/Tubes-PYTORCH/main/order_reviews_dataset.csv")
-df_orders = load_data("https://raw.githubusercontent.com/palafk/Tubes-PYTORCH/main/orders_dataset.csv")
-df_sellers = load_data("https://raw.githubusercontent.com/palafk/Tubes-PYTORCH/main/sellers_dataset.csv")
+df_orders = load_data(
+    "https://raw.githubusercontent.com/palafk/Tubes-PYTORCH/main/orders_dataset.csv")
+df_sellers = load_data(
+    "https://raw.githubusercontent.com/palafk/Tubes-PYTORCH/main/sellers_dataset.csv")
 
 with st.sidebar:
     selected = option_menu('Menu', ['Dashboard'],
@@ -313,7 +334,8 @@ with st.sidebar:
 
 if (selected == 'Dashboard'):
     st.header(f"E-Commerce Shopee")
-    tab1, tab2, tab3 = st.tabs(["Data Pengiriman", "Data Review", "Data Geografi"])
+    tab1, tab2, tab3 = st.tabs(
+        ["Data Pengiriman", "Data Review", "Data Geografi"])
 
     with tab1:
         Analisis_Pengiriman(df_orders)
