@@ -1,11 +1,9 @@
 import streamlit as st
 import pandas as pd
 import folium
-import matplotlib.pyplot as plt
 import datetime
 from PIL import Image
 import numpy as np
-from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import seaborn as sns
 from streamlit_option_menu import option_menu
